@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerenciador de Links</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+    body {
+      margin: 0;
+      padding: 2rem;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: url('https://www.jornalcorreiodacidade.com.br/imagens/destaques/68264a2f7a423.jpg') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      backdrop-filter: brightness(0.5);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 5px #000;
+    }
+
+    #linkForm {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      max-width: 700px;
+      width: 100%;
+      margin-bottom: 20px;
+      background: rgba(0,0,0,0.5);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #000;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+      background-color: #ff4081;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 0 8px #ff4081;
+    }
+
+    button:hover {
+      background-color: #e91e63;
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #e91e63;
+    }
+
+    #links {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .link-item {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 0 8px #ff4081;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .link-item img {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 2px solid #ff4081;
+      flex-shrink: 0;
+    }
+
+    .link-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+      text-shadow: 1px 1px 3px #000;
+    }
+
+    .link-info a {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #ff80ab;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .link-info a:hover {
+      text-decoration: underline;
+      color: #fff;
+    }
+
+    .link-info .click-here {
+      font-size: 0.9rem;
+      color: #ff4081;
+      cursor: pointer;
+      user-select: none;
+      margin-top: 3px;
+      font-weight: 600;
+      animation: pulse 2s infinite;
+    }
+
+    .emoji {
+      animation: bounce 2s infinite;
+      margin-left: 6px;
+      font-size: 1.3rem;
+      user-select: none;
+    }
+
+    button.visit-btn {
+      background-color: #00bcd4;
+      box-shadow: 0 0 8px #00bcd4;
+      font-weight: 700;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      border-radius: 5px;
+      padding: 8px 15px;
+      cursor: pointer;
+      color: white;
+      border: none;
+      flex-shrink: 0;
+    }
+
+    button.visit-btn:hover {
+      background-color: #0097a7;
+      transform: scale(1.1);
+      box-shadow: 0 0 15px #0097a7;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <h1>Meus Links</h1>
+  <form id="linkForm" autocomplete="off">
+    <input type="text" id="linkName" placeholder="Nome do link" required />
+    <input type="text" id="linkURL" placeholder="https://exemplo.com" required />
+    <button type="submit">Adicionar</button>
+  </form>
+  <div id="links"></div>
+
+  <script>
+    const form = document.getElementById('linkForm');
+    const linksDiv = document.getElementById('links');
+    let links = JSON.parse(localStorage.getItem('meus_links') || '[]');
+
+    function isValidURL(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    function fetchFavicon(url) {
+      try {
+        const u = new URL(url);
+        return u.origin + '/favicon.ico';
+      } catch {
+        return '';
+      }
+    }
+
+    function renderLinks() {
+      linksDiv.innerHTML = '';
+      links.forEach((link, index) => {
+        const div = document.createElement('div');
+        div.className = 'link-item';
+
+        const imgSrc = fetchFavicon(link.url) || 'https://via.placeholder.com/50?text=🔗';
+
+        div.innerHTML = `
+          <img src="${imgSrc}" alt="Ícone do link" onerror="this.src='https://via.placeholder.com/50?text=🔗';" />
+          <div class="link-info">
+            <a href="${link.url}" target="_blank" rel="noopener noreferrer">
+              ${link.name} <span class="emoji">✨</span>
+            </a>
+            <span class="click-here" onclick="window.open('${link.url}', '_blank')">👉 Clique aqui para acessar</span>
+          </div>
+          <button class="visit-btn" onclick="window.open('${link.url}', '_blank')">Clique aqui</button>
+        `;
+        linksDiv.appendChild(div);
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('linkName').value.trim();
+      const url = document.getElementById('linkURL').value.trim();
+
+      if (!isValidURL(url)) {
+        alert('Por favor, insira uma URL válida, começando com https://');
+        return;
+      }
+
+      if (name && url) {
+        links.push({ name, url });
+        localStorage.setItem('meus_links', JSON.stringify(links));
+        renderLinks();
+        form.reset();
+      }
+    });
+
+    renderLinks();
+  </script>
+</body>
+</html>
